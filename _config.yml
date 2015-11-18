@@ -1,0 +1,28 @@
+# Permalinks
+permalink:        /blog/:year/:month/:day/:title
+
+# Highlighter
+highlighter:      pygments
+
+# Setup
+title:            Joseph Billingsley
+tagline:          Software developer in progress
+description:	    Website and blog of Joseph Billingsley
+url:              www.josephbillingsley.co.uk
+
+author:
+  name:           'Joseph Billingsley'
+  url:            https://twitter.com/josephbillingsley
+
+paginate:         7
+paginate_path:    "/blog/page:num/"
+
+sass:
+  style: compressed
+  sass_dir: _sass
+
+gems:
+  - jekyll-sitemap
+
+# Custom vars
+version:          0.0.2
