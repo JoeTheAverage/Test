@@ -2,6 +2,8 @@
 import fs from 'fs';
 import gulp from 'gulp';
 import del from 'del';
+import merge from 'deepmerge';
+import glob from 'glob';
 import browserSync from 'browser-sync';
 import gulpLoadPlugins from 'gulp-load-plugins';
 
@@ -41,23 +43,21 @@ gulp.task('lint', () => {
     .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('handlebars', () => {
-  var data = JSON.parse(
-    fs.readFileSync(src.data + "/data.json"));
-    
-  var options = {
-    batch : [src.templates],
+gulp.task('html', () => {
+  var context = {}
+  var files = glob.sync(src.data + "**/*.json");
+  
+  for (let file of files) {
+    let data = JSON.parse(fs.readFileSync(file));
+    context = merge(data, context);
   }
   
-  return gulp.src(src.html + '/*.handlebars')
-    .pipe($.compileHandlebars(data, options))
-    .pipe($.rename((path) => {
-      path.extname = ".html"
-    }))
-});
-
-gulp.task('html', ['handlebars'], () => {
+  var options = {
+    batch: [src.templates],
+  }
+  
   return gulp.src(src.html + '**/*.html')
+    .pipe($.compileHandlebars(context, options))
     .pipe($.minifyHtml())
     .pipe($.size({ title: 'html' }))
     .pipe(gulp.dest(dest.html))
@@ -66,32 +66,32 @@ gulp.task('html', ['handlebars'], () => {
 gulp.task('scripts', ['lint'], () => {
   return gulp.src(src.scripts)
     .pipe($.sourcemaps.init())
-      .pipe($.babel())
+    .pipe($.babel())
     .pipe($.sourcemaps.write())
-      .pipe($.concat('main.min.js'))
-      .pipe($.uglify())
-      .pipe($.size({ title: 'scripts' }))
+    .pipe($.concat('main.min.js'))
+    .pipe($.uglify())
+    .pipe($.size({ title: 'scripts' }))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'scripts' }))
     .pipe($.rev())
     .pipe(gulp.dest(dest.scripts));
 });
 
-gulp.task('styles', () => {
+gulp.task('styles', ['html'], () => {
   return gulp.src([
-      src.styles + "**/*.sass",
-      src.styles + "**/*.css"
-    ])
+    src.styles + "**/*.sass",
+    src.styles + "**/*.css"
+  ])
     .pipe($.sourcemaps.init())
-      .pipe($.sass()).on('error', $.sass.logError)
-      .pipe($.autoprefixer({
-        browsers: ['last 2 versions']
-      }))
-      .pipe($.minifyCss())
-      .pipe($.uncss({
-        html: ['**/*.html']
-      }))
-      .pipe($.concat('main.styles.css'))
+    .pipe($.sass()).on('error', $.sass.logError)
+    .pipe($.autoprefixer({
+      browsers: ['last 2 versions']
+    }))
+    .pipe($.minifyCss())
+    .pipe($.uncss({
+      html: [src.html + '**/*.html']
+    }))
+    .pipe($.concat('main.styles.css'))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'styles' }))
     .pipe($.rev())
@@ -114,16 +114,17 @@ gulp.task('images', () => {
 
 gulp.task('watch', () => {
   browserSync({
+    open: false,
     notify: false,
     logPrefix: 'IDC',
     scrollElementMapping: ['main', '.mdl-layout'],
     server: ['build'],
-    port: 3000
+    port: 4000
   });
 
   gulp.watch(src.html + '**/*.html', ['html', reload]);
   gulp.watch(src.scripts + '**/*.js', ['scripts', reload]);
-  gulp.watch([src.styles + '**/*.(sass|css)'], ['styles']);
+  gulp.watch(src.styles + '**/*.(sass|css)', ['styles']);
   gulp.watch(src.images + '**/*', ['images']);
 });
 
