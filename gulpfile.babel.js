@@ -43,7 +43,7 @@ gulp.task('lint', () => {
     .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('html', () => {
+gulp.task('html', ['styles'], () => {
   var context = {}
   var files = glob.sync(src.data + "**/*.json");
   
@@ -77,7 +77,7 @@ gulp.task('scripts', ['lint'], () => {
     .pipe(gulp.dest(dest.scripts));
 });
 
-gulp.task('styles', ['html'], () => {
+gulp.task('styles', () => {
   return gulp.src([
     src.styles + "**/*.sass",
     src.styles + "**/*.css"
@@ -91,11 +91,13 @@ gulp.task('styles', ['html'], () => {
     .pipe($.uncss({
       html: [src.html + '**/*.html']
     }))
-    .pipe($.concat('main.styles.css'))
+    .pipe($.concat('main.css'))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'styles' }))
     .pipe($.rev())
     .pipe(gulp.dest(dest.styles))
+    .pipe($.rev.manifest())
+    .pipe(gulp.dest(src.data))
     .pipe(browserSync.stream())
 });
 
