@@ -43,7 +43,7 @@ gulp.task('lint', () => {
     .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('html', ['styles'], () => {
+gulp.task('html', () => {
   var context = {}
   var files = glob.sync(src.data + "**/*.json");
   
@@ -66,14 +66,13 @@ gulp.task('html', ['styles'], () => {
 gulp.task('scripts', ['lint'], () => {
   return gulp.src(src.scripts)
     .pipe($.sourcemaps.init())
-    .pipe($.babel())
+      .pipe($.babel())
     .pipe($.sourcemaps.write())
-    .pipe($.concat('main.min.js'))
-    .pipe($.uglify())
-    .pipe($.size({ title: 'scripts' }))
+      .pipe($.concat('main.min.js'))
+      .pipe($.uglify())
+      .pipe($.size({ title: 'scripts' }))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'scripts' }))
-    .pipe($.rev())
     .pipe(gulp.dest(dest.scripts));
 });
 
@@ -82,22 +81,19 @@ gulp.task('styles', () => {
     src.styles + "**/*.sass",
     src.styles + "**/*.css"
   ])
-    .pipe($.sourcemaps.init())
-    .pipe($.sass()).on('error', $.sass.logError)
-    .pipe($.autoprefixer({
-      browsers: ['last 2 versions']
-    }))
-    .pipe($.minifyCss())
-    .pipe($.uncss({
-      html: [src.html + '**/*.html']
-    }))
-    .pipe($.concat('main.css'))
+      .pipe($.sourcemaps.init())
+      .pipe($.sass()).on('error', $.sass.logError)
+      .pipe($.autoprefixer({
+        browsers: ['last 2 versions']
+      }))
+      .pipe($.minifyCss())
+      .pipe($.uncss({
+        html: [src.html + '**/*.html']
+      }))
+      .pipe($.concat('main.css'))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'styles' }))
-    .pipe($.rev())
     .pipe(gulp.dest(dest.styles))
-    .pipe($.rev.manifest())
-    .pipe(gulp.dest(src.data))
     .pipe(browserSync.stream())
 });
 
@@ -109,7 +105,6 @@ gulp.task('images', () => {
       interlaced: true
     })))
     .pipe($.size({ title: 'images' }))
-    .pipe($.rev())
     .pipe(gulp.dest(dest.images))
     .pipe(browserSync.stream())
 });
@@ -126,7 +121,7 @@ gulp.task('watch', () => {
 
   gulp.watch(src.html + '**/*.html', ['html', reload]);
   gulp.watch(src.scripts + '**/*.js', ['scripts', reload]);
-  gulp.watch(src.styles + '**/*.(sass|css)', ['styles']);
+  gulp.watch(src.styles + '**/*.{scss,css}', ['styles']);
   gulp.watch(src.images + '**/*', ['images']);
 });
 
