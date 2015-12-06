@@ -7,12 +7,13 @@ import glob from 'glob';
 import browserSync from 'browser-sync';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import minimist from 'minimist';
+import cleanUrls from 'clean-urls';
 
 const $ = gulpLoadPlugins();
 
 const paths = {
   src: 'src/',
-  dest: 'build/'
+  dest: '.build/'
 }
 
 var reload = browserSync.reload;
@@ -49,16 +50,16 @@ gulp.task('lint', () => {
 gulp.task('html', () => {
   var context = {}
   var files = glob.sync(src.data + "**/*.json");
-  
+
   for (let file of files) {
     let data = JSON.parse(fs.readFileSync(file));
     context = merge(data, context);
   }
-  
+
   var options = {
     batch: [src.templates],
   }
-  
+
   return gulp.src(src.html + '**/*.html')
     .pipe($.compileHandlebars(context, options))
     .pipe($.minifyHtml())
@@ -69,11 +70,11 @@ gulp.task('html', () => {
 gulp.task('scripts', ['lint'], () => {
   return gulp.src(src.scripts)
     .pipe($.sourcemaps.init())
-      .pipe($.babel())
+    .pipe($.babel())
     .pipe($.sourcemaps.write())
-      .pipe($.concat('main.min.js'))
-      .pipe($.uglify())
-      .pipe($.size({ title: 'scripts' }))
+    .pipe($.concat('main.min.js'))
+    .pipe($.uglify())
+    .pipe($.size({ title: 'scripts' }))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'scripts' }))
     .pipe(gulp.dest(dest.scripts));
@@ -84,16 +85,16 @@ gulp.task('styles', () => {
     src.styles + "**/*.sass",
     src.styles + "**/*.css"
   ])
-      .pipe($.sourcemaps.init())
-      .pipe($.sass()).on('error', $.sass.logError)
-      .pipe($.autoprefixer({
-        browsers: ['last 2 versions']
-      }))
-      .pipe($.minifyCss())
-      .pipe($.uncss({
-        html: [src.html + '**/*.html']
-      }))
-      .pipe($.concat('main.css'))
+    .pipe($.sourcemaps.init())
+    .pipe($.sass()).on('error', $.sass.logError)
+    .pipe($.autoprefixer({
+      browsers: ['last 2 versions']
+    }))
+    .pipe($.minifyCss())
+    .pipe($.uncss({
+      html: [src.html + '**/*.html']
+    }))
+    .pipe($.concat('main.css'))
     .pipe($.sourcemaps.write())
     .pipe($.size({ title: 'styles' }))
     .pipe(gulp.dest(dest.styles))
@@ -118,7 +119,12 @@ gulp.task('watch', () => {
     notify: false,
     logPrefix: 'IDC',
     scrollElementMapping: ['main', '.mdl-layout'],
-    server: ['build'],
+    server: {
+      baseDir: paths.dest,
+      middleware: cleanUrls(true, {
+        root: './.build'
+      })
+    },
     port: 4000
   });
 
@@ -129,11 +135,11 @@ gulp.task('watch', () => {
 });
 
 gulp.task('publish', ['default'], () => {
-  return gulp.src('./build/*')
-  .pipe($.ghPages({
-    branch: 'gh-pages',
-    message: argv.m
-  }))}
-)
+  return gulp.src('./.build/*')
+    .pipe($.ghPages({
+      branch: 'gh-pages',
+      message: argv.m
+    }))
+})
 
 gulp.task('default', ['clean', 'html', 'scripts', 'styles', 'images', 'watch']);
