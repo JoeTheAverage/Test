@@ -82,7 +82,7 @@ gulp.task('scripts', ['lint'], () => {
 
 gulp.task('styles', () => {
   return gulp.src([
-    src.styles + "**/*.sass",
+    src.styles + "**/*.scss",
     src.styles + "**/*.css"
   ])
     .pipe($.sourcemaps.init())
@@ -117,7 +117,7 @@ gulp.task('watch', () => {
   browserSync({
     open: false,
     notify: false,
-    logPrefix: 'IDC',
+    logPrefix: 'BSYN',
     scrollElementMapping: ['main', '.mdl-layout'],
     server: {
       baseDir: paths.dest,
@@ -130,7 +130,7 @@ gulp.task('watch', () => {
 
   gulp.watch(src.html + '**/*.html', ['html', reload]);
   gulp.watch(src.scripts + '**/*.js', ['scripts', reload]);
-  gulp.watch(src.styles + '**/*.{scss,css}', ['styles']);
+  gulp.watch(src.styles + '**/*.+(css|scss)', ['styles']);
   gulp.watch(src.images + '**/*', ['images']);
 });
 
