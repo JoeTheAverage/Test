@@ -1,4 +1,9 @@
-_site
+# Node
 node_modules
-build
+
+# Build
+.build
+.publish
+
+#VS Code
 jsconfig.json
