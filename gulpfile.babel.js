@@ -6,6 +6,7 @@ import merge from 'deepmerge';
 import glob from 'glob';
 import browserSync from 'browser-sync';
 import gulpLoadPlugins from 'gulp-load-plugins';
+import minimist from 'minimist';
 
 const $ = gulpLoadPlugins();
 
@@ -31,6 +32,8 @@ var dest = {
   images: paths.dest + "img/",
   html: paths.dest
 }
+
+var argv = minimist(process.argv.slice(2));
 
 gulp.task('clean', () => {
   return del([paths.dest]);
@@ -124,5 +127,13 @@ gulp.task('watch', () => {
   gulp.watch(src.styles + '**/*.{scss,css}', ['styles']);
   gulp.watch(src.images + '**/*', ['images']);
 });
+
+gulp.task('publish', ['default'], () => {
+  return gulp.src('./build/*')
+  .pipe($.ghPages({
+    branch: 'gh-pages',
+    message: argv.m
+  }))}
+)
 
 gulp.task('default', ['clean', 'html', 'scripts', 'styles', 'images', 'watch']);
